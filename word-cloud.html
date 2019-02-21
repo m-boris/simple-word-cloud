@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="wordListCanvas" width="1000" height="100" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+
+<script>
+
+var textRecs = new Array();
+let words = [ "Java", "Spring", "Spring Boot", "JavaScript", "SQL", "NoSQL", "PostgreSQL", "Cassandra", "Big Data", "Maven", "Git", "Bash", "Linux", "Cloud Foundry", "Heroku", "MySQL", "Oracle" ];
+var MaxRetryToFindLocation = 100;
+
+class TextRect{
+	constructor( startX, startY, endX, endY ){
+		this.startX = startX;
+		this.startY = startY;
+		this.endX = endX;
+		this.endY = endY;
+	}
+	
+	isOverlap( textRect ){
+		return this.isInside( textRect.startX, textRect.endX, this.startX, this.endX ) && this.isInside( textRect.startY, textRect.endY, this.startY, this.endY );
+	}
+	
+	isInside( s1, e1, s2, e2 ){
+		if ( s2 >= s1 && s2 <= e1 ){
+			return true;
+		}
+		if ( s2 <= s1 && e2 >= s1 ){
+			return true;
+		}
+		return false;
+	}	
+}
+
+var c = document.getElementById("wordListCanvas");
+for ( let i = 0; i<words.length;i++){
+	drawWordInEmptyPlace( c, words[i], 30-i )
+}
+
+
+
+function drawWordInEmptyPlace( canvas, text, fontSize ){
+	
+	var ctx = c.getContext("2d");
+	var allowFillText = false;
+	do{
+		textHeight = fontSize*1.2;
+		ctx.font = fontSize + "px Arial";
+		m = ctx.measureText(text);
+		textWidth = m.width;
+		for( j=0;j<MaxRetryToFindLocation;j++ ){
+			x = Math.floor((Math.random() * (c.clientWidth - textWidth) ) );
+			y = Math.floor((Math.random() * (c.clientHeight - textHeight)) + textHeight );
+			textRect = new TextRect(  x, y, x+textWidth, y+textHeight );
+			allowFillText = true;
+			for( i=0;i<textRecs.length;i++ ){
+				if (textRecs[i].isOverlap( textRect ) ){
+					allowFillText = false;
+				}			
+			}
+			if ( allowFillText ){
+				break;
+			}
+		}
+		if ( allowFillText ){
+			textRecs.push( textRect );
+		} else {
+			if ( --fontSize < 5 ){
+				return;
+			} 
+		}
+	}while( !allowFillText );
+	ctx.fillText(text, x, y);
+}
+
+</script>
+
+</body>
+</html>
